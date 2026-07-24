@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  --foreground-muted: #6e6e73;
+
+  --glass-bg: rgba(255, 255, 255, 0.14);
+  --glass-bg-strong: rgba(255, 255, 255, 0.26);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+  --scrim: rgba(0, 0, 0, 0.22);
+
+  --bg-blob-a: #a5b4fc;
+  --bg-blob-b: #f9a8d4;
+  --bg-blob-c: #fde68a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-glass: var(--glass-bg);
+  --color-glass-strong: var(--glass-bg-strong);
+  --color-glass-border: var(--glass-border);
+  --color-glass-highlight: var(--glass-highlight);
+  --color-scrim: var(--scrim);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --radius-glass-sm: 14px;
+  --radius-glass-md: 20px;
+  --radius-glass-lg: 28px;
+  --radius-glass-xl: 36px;
+  --radius-glass-pill: 999px;
+
+  --shadow-glass-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px -10px rgba(0, 0, 0, 0.12);
+  --shadow-glass-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 24px 56px -16px rgba(0, 0, 0, 0.18);
+  --shadow-glass-lg: 0 8px 32px rgba(0, 0, 0, 0.1), 0 40px 96px -20px rgba(0, 0, 0, 0.28);
+
+  --animate-in: fade-in 0.2s ease-out;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  /* Fondo con degradados suaves y fijos: da al cristal algo de color que difuminar
+     incluso cuando todavía no hay fotos en la galería. */
+  background:
+    radial-gradient(
+      900px 560px at 12% -8%,
+      color-mix(in srgb, var(--bg-blob-a) 26%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      760px 480px at 108% 8%,
+      color-mix(in srgb, var(--bg-blob-b) 22%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      700px 480px at 50% 115%,
+      color-mix(in srgb, var(--bg-blob-c) 18%, transparent),
+      transparent 60%
+    ),
+    var(--background);
+  background-attachment: fixed;
+  color: var(--foreground);
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--foreground) 15%, transparent);
+}
+
+/* Barra de scroll fina y translúcida, a juego con el cristal (Firefox + WebKit). */
+.glass-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--foreground) 25%, transparent) transparent;
+}
+
+.glass-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.glass-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.glass-scrollbar::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--foreground) 25%, transparent);
+  border-radius: 999px;
+}
+
+.glass-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--foreground) 40%, transparent);
+}
