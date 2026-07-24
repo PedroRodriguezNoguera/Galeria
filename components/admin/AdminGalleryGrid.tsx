@@ -117,7 +117,7 @@ export function AdminGalleryGrid({ items }: AdminGalleryGridProps) {
 
   return (
     <>
-      <div className="mb-3 flex flex-wrap gap-1.5">
+      <div className="mb-3 flex flex-wrap items-center gap-1.5">
         {SORT_OPTIONS.map((option) => (
           <Button
             key={option.value}
@@ -130,13 +130,22 @@ export function AdminGalleryGrid({ items }: AdminGalleryGridProps) {
             {option.label}
           </Button>
         ))}
+        {/* Descarga directa (GET con Content-Disposition: attachment), no una
+            Server Action: así el navegador la trata como una descarga nativa
+            en streaming, sin pasar el ZIP entero por memoria del cliente. */}
+        <a
+          href="/admin/export"
+          className="ml-auto inline-flex h-8 items-center justify-center gap-1.5 rounded-glass-pill border border-glass-border bg-glass px-3 text-xs font-medium text-foreground backdrop-blur-xl transition-colors"
+        >
+          Exportar todo ⬇
+        </a>
       </div>
 
       <motion.div
         initial="hidden"
         animate="visible"
         variants={staggerChildren}
-        className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 sm:gap-2"
+        className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 sm:gap-2 lg:grid-cols-6 xl:grid-cols-8"
       >
         {sortedItems.map((media) => (
           <AdminGalleryTile

@@ -36,7 +36,7 @@ export function Header() {
     <header className="fixed inset-x-0 top-0 z-40 flex justify-center px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
       <GlassPanel
         elevation="sm"
-        className="relative flex w-full max-w-2xl items-center overflow-hidden rounded-glass-pill px-4 py-2.5"
+        className="relative flex w-full max-w-2xl items-center overflow-hidden rounded-glass-pill px-4 py-2.5 lg:max-w-4xl xl:max-w-5xl"
       >
         {/* Confeti recortado a la propia forma (píldora) de la cabecera. */}
         <ConfettiCanvas

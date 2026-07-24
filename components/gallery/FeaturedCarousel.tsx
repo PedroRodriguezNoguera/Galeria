@@ -181,7 +181,7 @@ export function FeaturedCarousel({ items }: FeaturedCarouselProps) {
             aria-hidden="true"
           />
 
-          <div className="relative h-full max-h-[calc(100vh-2rem)] w-full max-w-lg scale-[0.8]">
+          <div className="relative h-full max-h-[calc(100vh-2rem)] w-full max-w-lg scale-[0.8] lg:max-w-2xl xl:max-w-3xl">
             <AnimatePresence custom={lastDirection} initial={false}>
               {visible.map((entry, position) => {
                 const isFront = position === 0;

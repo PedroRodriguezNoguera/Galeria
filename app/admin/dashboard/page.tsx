@@ -19,7 +19,7 @@ export default async function AdminDashboardPage() {
   const items = await attachReactionSummaries(supabase, posts ?? []);
 
   return (
-    <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6">
+    <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 lg:max-w-5xl xl:max-w-6xl">
       <AdminNav />
       <AdminDashboardHeader />
       <AdminGalleryGrid items={items} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useGalleryFeed } from "@/hooks/useGalleryFeed";
 import { useRealtimeMedia } from "@/hooks/useRealtimeMedia";
@@ -10,17 +10,51 @@ import { GalleryTile } from "./GalleryTile";
 import { Spinner } from "@/components/ui/Spinner";
 import type { MediaWithReactions } from "@/types/media";
 
-const COLUMNS = 3;
+// Mismo número de columnas en móvil de siempre (nunca cambia por debajo de
+// 1024px). En pantallas de escritorio se amplía: la rejilla está virtualizada
+// y el número de columnas también decide cómo se agrupan los elementos en
+// "filas" (ver chunkIntoRows) — por eso no basta con clases de Tailwind
+// (grid-cols-N por breakpoint) sueltas: si CSS mostrara más columnas que las
+// que JS mete en cada fila, sobraría hueco a la derecha de cada fila. Este
+// hook mantiene ambas cosas sincronizadas con el mismo criterio.
+const MOBILE_COLUMNS = 3;
+const COLUMN_BREAKPOINTS: { query: string; columns: number }[] = [
+  { query: "(min-width: 1280px)", columns: 6 },
+  { query: "(min-width: 1024px)", columns: 5 },
+];
+
+function getResponsiveColumns(): number {
+  if (typeof window === "undefined") return MOBILE_COLUMNS;
+  const match = COLUMN_BREAKPOINTS.find(({ query }) => window.matchMedia(query).matches);
+  return match?.columns ?? MOBILE_COLUMNS;
+}
+
+function useResponsiveColumns(): number {
+  const [columns, setColumns] = useState(MOBILE_COLUMNS);
+
+  useEffect(() => {
+    const mediaQueries = COLUMN_BREAKPOINTS.map(({ query }) => window.matchMedia(query));
+    function update() {
+      setColumns(getResponsiveColumns());
+    }
+    update();
+    mediaQueries.forEach((mql) => mql.addEventListener("change", update));
+    return () => mediaQueries.forEach((mql) => mql.removeEventListener("change", update));
+  }, []);
+
+  return columns;
+}
+
 // Estimación inicial de alto de fila; el virtualizador la corrige con la
 // medida real tras el primer render (measureElement), así que no depende
 // de acertar el valor exacto por breakpoint.
 const ESTIMATED_ROW_HEIGHT = 140;
 const LOADER_ROW_HEIGHT = 64;
 
-function chunkIntoRows(items: MediaWithReactions[]): MediaWithReactions[][] {
+function chunkIntoRows(items: MediaWithReactions[], columns: number): MediaWithReactions[][] {
   const rows: MediaWithReactions[][] = [];
-  for (let i = 0; i < items.length; i += COLUMNS) {
-    rows.push(items.slice(i, i + COLUMNS));
+  for (let i = 0; i < items.length; i += columns) {
+    rows.push(items.slice(i, i + columns));
   }
   return rows;
 }
@@ -30,8 +64,9 @@ export function GalleryGrid() {
   useRealtimeMedia();
   useRealtimeReactions();
 
-  const items = data?.pages.flatMap((page) => page.items) ?? [];
-  const rows = chunkIntoRows(items);
+  const columns = useResponsiveColumns();
+  const items = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
+  const rows = useMemo(() => chunkIntoRows(items, columns), [items, columns]);
   const listRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
 
@@ -77,14 +112,14 @@ export function GalleryGrid() {
     return onScrollToMedia((mediaId) => {
       const itemIndex = items.findIndex((item) => item.id === mediaId);
       if (itemIndex === -1) return;
-      const rowIndex = Math.floor(itemIndex / COLUMNS);
+      const rowIndex = Math.floor(itemIndex / columns);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           rowVirtualizer.scrollToIndex(rowIndex, { align: "center" });
         });
       });
     });
-  }, [items, rowVirtualizer]);
+  }, [items, columns, rowVirtualizer]);
 
   if (isPending) {
     return (
@@ -118,7 +153,10 @@ export function GalleryGrid() {
             style={{ transform: `translateY(${top}px)` }}
           >
             {row ? (
-              <div className="grid grid-cols-3 gap-1.5 pb-1.5 sm:gap-2 sm:pb-2">
+              <div
+                className="grid gap-1.5 pb-1.5 sm:gap-2 sm:pb-2"
+                style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
+              >
                 {row.map((media) => (
                   <GalleryTile key={media.id} media={media} />
                 ))}

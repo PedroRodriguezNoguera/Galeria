@@ -31,7 +31,7 @@ const dateFormatter = new Intl.DateTimeFormat("es-ES", {
 
 export function PeopleScreen({ people }: PeopleScreenProps) {
   return (
-    <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6">
+    <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 lg:max-w-5xl xl:max-w-6xl">
       <AdminNav />
       <div className="mb-6">
         <h1 className="text-xl font-semibold">Personas</h1>

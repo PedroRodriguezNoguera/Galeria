@@ -54,7 +54,7 @@ export default async function MediaPage({ params }: MediaPageProps) {
     <HydrationBoundary state={dehydrate(queryClient)}>
       <Header />
       {/* pt: dejar sitio al header, que ahora es `fixed` y ya no ocupa espacio en el flujo. */}
-      <main className="mx-auto w-full max-w-2xl flex-1 px-3 pb-28 pt-[calc(env(safe-area-inset-top)+7rem)]">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-3 pb-28 pt-[calc(env(safe-area-inset-top)+7rem)] lg:max-w-4xl xl:max-w-5xl">
         <GalleryGrid />
       </main>
       <FooterCaption />

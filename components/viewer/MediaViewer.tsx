@@ -157,7 +157,7 @@ export function MediaViewer({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9, y: 32 }}
             transition={springGentle}
-            className="relative flex h-full max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-glass-xl border border-glass-border bg-glass-strong backdrop-blur-xl backdrop-saturate-150 shadow-glass-lg"
+            className="relative flex h-full max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-glass-xl border border-glass-border bg-glass-strong backdrop-blur-xl backdrop-saturate-150 shadow-glass-lg lg:max-w-2xl xl:max-w-3xl"
           >
             {/* Foto/vídeo a sangre completa. Donde no llegue (letterbox por proporción)
                 se ve el propio cristal del panel, es decir, lo que hay detrás de verdad

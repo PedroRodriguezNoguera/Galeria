@@ -51,7 +51,7 @@ export function BottomSheet({ open, onClose, children, className }: BottomSheetP
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={prefersReducedMotion ? fadeTransition : springSheet}
-            className="relative w-full max-w-lg"
+            className="relative w-full max-w-lg lg:max-w-xl"
             role="dialog"
             aria-modal="true"
           >

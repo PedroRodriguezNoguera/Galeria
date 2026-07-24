@@ -84,7 +84,7 @@ export function DestacadosScreen({ items, destacadosEnabled }: DestacadosScreenP
           initial="hidden"
           animate="visible"
           variants={staggerChildren}
-          className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 sm:gap-2"
+          className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 sm:gap-2 lg:grid-cols-6 xl:grid-cols-8"
         >
           <AnimatePresence>
             {items.map((media) => {

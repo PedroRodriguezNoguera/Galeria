@@ -133,7 +133,7 @@ export function AdminMediaViewer({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9, y: 32 }}
             transition={springGentle}
-            className="relative flex h-full max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-glass-xl border border-glass-border bg-glass-strong backdrop-blur-xl backdrop-saturate-150 shadow-glass-lg"
+            className="relative flex h-full max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-glass-xl border border-glass-border bg-glass-strong backdrop-blur-xl backdrop-saturate-150 shadow-glass-lg lg:max-w-2xl xl:max-w-3xl"
           >
             <div className="absolute inset-0">
               <AnimatePresence initial={false} custom={direction} mode="popLayout">
