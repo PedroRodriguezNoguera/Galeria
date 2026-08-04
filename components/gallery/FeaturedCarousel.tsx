@@ -19,6 +19,7 @@ import { Logo } from "@/components/layout/Logo";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { springSwipe, fadeTransition } from "@/animations/springs";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { emitCarouselFinished } from "@/lib/events/carouselBus";
 
 interface FeaturedCarouselProps {
   items: MediaRecord[];
@@ -92,6 +93,13 @@ export function FeaturedCarousel({ items }: FeaturedCarouselProps) {
     { kind: "thanks" as const },
   ];
   const finished = currentIndex >= stack.length;
+
+  // Avisa a quien esté esperando a que el carrusel deje de tapar la pantalla
+  // (ver EventCountdownNotice): sin esto, cualquiera que se muestre "detrás"
+  // ya habría hecho su animación de entrada oculto bajo este overlay.
+  useEffect(() => {
+    if (finished) emitCarouselFinished();
+  }, [finished]);
   const frontEntry = stack[currentIndex];
   // Las tarjetas de bienvenida y agradecimiento (primera y última) no tienen
   // fecha de caducidad: se quedan hasta que alguien las aparte con el dedo,

@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      bingo_cards: {
+        Row: {
+          card_index: number
+          created_at: string
+          device_id: string
+          grid: Json
+          marked_numbers: number[]
+          updated_at: string
+        }
+        Insert: {
+          card_index?: number
+          created_at?: string
+          device_id: string
+          grid: Json
+          marked_numbers?: number[]
+          updated_at?: string
+        }
+        Update: {
+          card_index?: number
+          created_at?: string
+          device_id?: string
+          grid?: Json
+          marked_numbers?: number[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bingo_settings: {
+        Row: {
+          auto_assign_cards: boolean
+          cards_per_visitor: number
+          cards_reset_at: string | null
+          drawn_numbers: number[]
+          enabled: boolean
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          auto_assign_cards?: boolean
+          cards_per_visitor?: number
+          cards_reset_at?: string | null
+          drawn_numbers?: number[]
+          enabled?: boolean
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          auto_assign_cards?: boolean
+          cards_per_visitor?: number
+          cards_reset_at?: string | null
+          drawn_numbers?: number[]
+          enabled?: boolean
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_schedule: {
         Row: {
           created_at: string
@@ -48,16 +105,19 @@ export type Database = {
         Row: {
           destacados_enabled: boolean
           id: boolean
+          map_enabled: boolean
           updated_at: string
         }
         Insert: {
           destacados_enabled?: boolean
           id?: boolean
+          map_enabled?: boolean
           updated_at?: string
         }
         Update: {
           destacados_enabled?: boolean
           id?: boolean
+          map_enabled?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -91,6 +151,8 @@ export type Database = {
           is_featured: boolean
           is_hidden: boolean
           is_unlisted: boolean
+          latitude: number | null
+          longitude: number | null
           media_type: string
           mime_type: string
           size_bytes: number
@@ -110,6 +172,8 @@ export type Database = {
           is_featured?: boolean
           is_hidden?: boolean
           is_unlisted?: boolean
+          latitude?: number | null
+          longitude?: number | null
           media_type: string
           mime_type: string
           size_bytes: number
@@ -129,6 +193,8 @@ export type Database = {
           is_featured?: boolean
           is_hidden?: boolean
           is_unlisted?: boolean
+          latitude?: number | null
+          longitude?: number | null
           media_type?: string
           mime_type?: string
           size_bytes?: number
@@ -222,6 +288,21 @@ export type Database = {
           },
         ]
       }
+      street_view_usage: {
+        Row: {
+          load_count: number
+          month: string
+        }
+        Insert: {
+          load_count?: number
+          month: string
+        }
+        Update: {
+          load_count?: number
+          month?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -242,6 +323,18 @@ export type Database = {
           media_id: string
         }[]
       }
+      get_street_view_load_count_this_month: { Args: never; Returns: number }
+      set_bingo_card_number_marked: {
+        Args: {
+          p_card_index: number
+          p_device_id: string
+          p_marked: boolean
+          p_number: number
+        }
+        Returns: undefined
+      }
+      toggle_bingo_number: { Args: { p_number: number }; Returns: number[] }
+      try_reserve_street_view_load: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

@@ -27,7 +27,7 @@ export function UploadFab() {
       <UploadSheet
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
-        onFilesSelected={(files) => upload(files)}
+        onFilesSelected={(files, _source, location) => upload(files, location)}
       />
 
       <UploadProgress

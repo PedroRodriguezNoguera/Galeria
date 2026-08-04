@@ -2,10 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useLogoTapCounter } from "@/hooks/useLogoTapCounter";
 import { useActiveEventTheme } from "@/hooks/useActiveEventTheme";
 import { useConfettiWave } from "@/hooks/useConfettiWave";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { GlassPanel } from "@/components/ui/GlassPanel";
+import { fadeTransition } from "@/animations/springs";
 import { ConfettiCanvas } from "./ConfettiCanvas";
 import { HeaderRunEvent } from "./HeaderRunEvent";
 import { HeaderPartyVanEvent } from "./HeaderPartyVanEvent";
@@ -17,10 +20,20 @@ import { HeaderChupinazoEvent } from "./HeaderChupinazoEvent";
 import { HeaderEncierroEvent } from "./HeaderEncierroEvent";
 import { Logo } from "./Logo";
 
-export function Header() {
+interface HeaderProps {
+  bingoEnabled?: boolean;
+}
+
+// Más lenta y suave que springPop (pensada para reacciones rápidas): el
+// cambio de texto de la cabecera no es algo a lo que reaccionar al instante,
+// así que se saborea un poco más.
+const HEADER_TEXT_TRANSITION = { type: "spring", stiffness: 110, damping: 16, mass: 1.4 } as const;
+
+export function Header({ bingoEnabled = false }: HeaderProps) {
   const router = useRouter();
   const activeTheme = useActiveEventTheme();
   const confettiWaving = useConfettiWave(activeTheme);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const unlockAdmin = useCallback(() => {
     router.push("/admin/login");
@@ -78,10 +91,24 @@ export function Header() {
           <Logo />
         </button>
 
-        {/* Texto de cabecera: placeholder a sustituir por el usuario más adelante */}
-        <p className="relative z-10 ml-auto whitespace-nowrap text-xl font-extrabold tracking-tight leading-tight">
-          ¡Felices Fiestas!
-        </p>
+        {/* Texto de cabecera: placeholder a sustituir por el usuario más adelante.
+            AnimatePresence + key por texto: al activar/desactivar el bingo, el
+            saliente y el entrante se cruzan (uno sube y se desvanece, el otro
+            entra desde abajo) en vez de cambiar de golpe. */}
+        <div className="relative z-10 ml-auto overflow-hidden">
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.p
+              key={bingoEnabled ? "bingo" : "fiestas"}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 14, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -14, scale: 0.9 }}
+              transition={prefersReducedMotion ? fadeTransition : HEADER_TEXT_TRANSITION}
+              className="whitespace-nowrap text-xl font-extrabold tracking-tight leading-tight"
+            >
+              {bingoEnabled ? "¡Bingo en directo!" : "¡Felices Fiestas!"}
+            </motion.p>
+          </AnimatePresence>
+        </div>
       </GlassPanel>
     </header>
   );

@@ -2,20 +2,32 @@
 
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import type { MediaRecord } from "@/types/media";
 import type { ReactionCounts } from "@/types/reaction";
 import { GlassPanel } from "@/components/ui/GlassPanel";
+import { MapPinIcon } from "@/components/ui/icons";
 import { PhotoZoomView } from "./PhotoZoomView";
 import { VideoPlayerView } from "./VideoPlayerView";
 import { ReactionBar } from "./ReactionBar";
 import { MediaPreloader } from "./MediaPreloader";
 import { useAdjacentMedia } from "@/hooks/useAdjacentMedia";
 import { useNearbyMedia } from "@/hooks/useNearbyMedia";
+import { useMapEnabled } from "@/hooks/useMapEnabled";
+import { useStreetViewBlockedByUsage } from "@/hooks/useStreetViewUsage";
 import { flushPendingActivity } from "@/lib/events/activityBus";
 import { requestScrollToMedia } from "@/lib/events/scrollBus";
 import { springGentle, springSwipe, fadeTransition } from "@/animations/springs";
 import { slideHorizontal } from "@/animations/variants";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+
+// La Maps JS API (~cargar el SDK entero) sólo debe pedirse si el usuario abre
+// de verdad la vista de calle (ver StreetViewOverlay): import dinámico +
+// ssr:false, nunca junto al resto del visor.
+const StreetViewOverlay = dynamic(
+  () => import("./StreetViewOverlay").then((mod) => mod.StreetViewOverlay),
+  { ssr: false },
+);
 
 interface MediaViewerProps {
   media: MediaRecord;
@@ -72,8 +84,19 @@ export function MediaViewer({
   // entre fotos) se desactiva: si no, compite con el pan de la imagen y el
   // gesto se siente inestable. Ver PhotoZoomView.onZoomChange.
   const [isZoomed, setIsZoomed] = useState(false);
+  const [streetViewOpen, setStreetViewOpen] = useState(false);
   const { prevMedia, nextMedia } = useAdjacentMedia(activeMedia.id);
   const { next: nextNearby, prev: prevNearby } = useNearbyMedia(activeMedia.id);
+  const mapEnabled = useMapEnabled();
+  // Si este mes ya se ha acercado al límite gratis de Street View, se oculta
+  // el icono directamente (ver STREET_VIEW_MONTHLY_SAFE_LIMIT): mejor no
+  // ofrecer el botón que ofrecerlo y que falle al pulsarlo.
+  const blockedByUsage = useStreetViewBlockedByUsage();
+  // Sólo con las dos coordenadas: una suelta no sirve (ver confirmUpload, que
+  // ya garantiza que nunca se guarda una a medias, pero el tipo sigue siendo
+  // nullable por columna).
+  const hasCoordinates = activeMedia.latitude != null && activeMedia.longitude != null;
+  const showMapButton = mapEnabled && hasCoordinates && !blockedByUsage;
 
   function requestClose() {
     // Se corrige el scroll de fondo YA, no sólo al terminar (ver
@@ -133,8 +156,9 @@ export function MediaViewer({
   }
 
   return (
-    <AnimatePresence onExitComplete={handleExitComplete}>
-      {!isClosing ? (
+    <>
+      <AnimatePresence onExitComplete={handleExitComplete}>
+        {!isClosing ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-8">
           <MediaPreloader key={activeMedia.id} next={nextNearby} prev={prevNearby} />
           <motion.div
@@ -187,14 +211,26 @@ export function MediaViewer({
               <span className="flex h-8 items-center rounded-glass-pill border border-glass-border bg-glass px-3 text-xs font-medium text-foreground backdrop-blur-xl backdrop-saturate-150">
                 {describeMediaDate(activeMedia)}
               </span>
-              <button
-                type="button"
-                onClick={requestClose}
-                aria-label="Cerrar"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-glass-border bg-glass text-foreground backdrop-blur-xl backdrop-saturate-150"
-              >
-                ✕
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                {showMapButton ? (
+                  <button
+                    type="button"
+                    onClick={() => setStreetViewOpen(true)}
+                    aria-label="Ver en Street View"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-glass-border bg-glass text-foreground backdrop-blur-xl backdrop-saturate-150"
+                  >
+                    <MapPinIcon className="h-4 w-4" />
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={requestClose}
+                  aria-label="Cerrar"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-glass-border bg-glass text-foreground backdrop-blur-xl backdrop-saturate-150"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             <div className="relative z-10 mt-auto px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">
@@ -211,5 +247,20 @@ export function MediaViewer({
         </div>
       ) : null}
     </AnimatePresence>
+
+    {/* Fuera del AnimatePresence de arriba: su propio ciclo de vida (y el
+        .load() de la Maps JS API dentro, ver el import dinámico) no debe
+        depender de si el visor se está cerrando. */}
+    {streetViewOpen && hasCoordinates ? (
+      <StreetViewOverlay
+        media={activeMedia}
+        onClose={() => setStreetViewOpen(false)}
+        onNavigateToMedia={(target) => {
+          setStreetViewOpen(false);
+          goTo(target, "next");
+        }}
+      />
+    ) : null}
+    </>
   );
 }

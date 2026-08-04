@@ -20,6 +20,9 @@ interface ConfirmUploadInput {
   durationMs?: number;
   /** Fecha EXIF (DateTimeOriginal) leída en el cliente, si el archivo la traía — ver extractExifTakenAt. */
   takenAt?: string;
+  /** GPS EXIF leído en el cliente, si el archivo lo traía — ver extractExifGps. */
+  latitude?: number;
+  longitude?: number;
 }
 
 /** Como con width/height/duration, se confía en el valor que manda el cliente (sólo metadato de visualización, no algo que afecte a seguridad) — pero sólo si es una fecha real. */
@@ -27,6 +30,17 @@ function parseTakenAt(takenAt: string | undefined): string | null {
   if (!takenAt) return null;
   const date = new Date(takenAt);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+/**
+ * A diferencia de width/height/takenAt, esto sí se valida en rango antes de
+ * guardarlo: son coordenadas reales que luego alimentan Street View, no un
+ * metadato puramente decorativo. Si el EXIF viniera corrupto o con un valor
+ * fuera de rango, se guarda null en vez de una coordenada inválida.
+ */
+function parseCoordinate(value: number | undefined, min: number, max: number): number | null {
+  if (typeof value !== "number" || Number.isNaN(value)) return null;
+  return value >= min && value <= max ? value : null;
 }
 
 function splitPath(path: string): { dir: string; name: string } {
@@ -41,8 +55,19 @@ function splitPath(path: string): { dir: string; name: string } {
  * Nunca confía en los metadatos que declaró el cliente.
  */
 export async function confirmUpload(input: ConfirmUploadInput) {
-  const { mediaId, storagePath, thumbnailPath, mediaType, mimeType, width, height, durationMs, takenAt } =
-    input;
+  const {
+    mediaId,
+    storagePath,
+    thumbnailPath,
+    mediaType,
+    mimeType,
+    width,
+    height,
+    durationMs,
+    takenAt,
+    latitude,
+    longitude,
+  } = input;
 
   const allowed = mediaType === "image" ? ALLOWED_IMAGE_MIME_TYPES : ALLOWED_VIDEO_MIME_TYPES;
   if (!(allowed as readonly string[]).includes(mimeType)) {
@@ -85,6 +110,16 @@ export async function confirmUpload(input: ConfirmUploadInput) {
 
   const ipHash = await hashIp();
 
+  // Una coordenada suelta (sólo lat o sólo lng) no sirve para nada: si
+  // cualquiera de las dos no pasa la validación de rango, se guardan las dos
+  // como null en vez de una mitad de coordenada.
+  let validLatitude = parseCoordinate(latitude, -90, 90);
+  let validLongitude = parseCoordinate(longitude, -180, 180);
+  if (validLatitude === null || validLongitude === null) {
+    validLatitude = null;
+    validLongitude = null;
+  }
+
   const { error: insertError } = await supabase.from("media").insert({
     id: mediaId,
     media_type: mediaType,
@@ -97,6 +132,8 @@ export async function confirmUpload(input: ConfirmUploadInput) {
     mime_type: mimeType,
     ip_hash: ipHash,
     taken_at: parseTakenAt(takenAt),
+    latitude: validLatitude,
+    longitude: validLongitude,
   });
 
   if (insertError) throw insertError;

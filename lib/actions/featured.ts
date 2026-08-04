@@ -45,3 +45,16 @@ export async function setDestacadosEnabled(enabled: boolean) {
   revalidatePath(DESTACADOS_PATH);
   revalidatePath("/");
 }
+
+/** Activa/desactiva el icono de Street View en el visor. Revalida "/" porque condiciona qué botón se ve ahí. */
+export async function setMapEnabled(enabled: boolean) {
+  await requireAdminSession();
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("feature_settings")
+    .update({ map_enabled: enabled, updated_at: new Date().toISOString() })
+    .eq("id", true);
+  if (error) throw error;
+  revalidatePath(DESTACADOS_PATH);
+  revalidatePath("/");
+}

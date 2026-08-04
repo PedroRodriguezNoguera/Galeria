@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { fetchGalleryPage } from "@/lib/data/gallery";
 import { fetchMediaById, fetchReactionCounts } from "@/lib/data/media";
 import { fetchEventSchedule, fetchDefaultTheme } from "@/lib/data/eventSchedule";
+import { fetchMapEnabled } from "@/lib/data/featureSettings";
+import { fetchStreetViewLoadCount } from "@/lib/data/streetViewUsage";
 import { getMyReactionEmojis } from "@/lib/actions/getMyReactionEmojis";
 import { queryKeys } from "@/lib/queryKeys";
 import { Header } from "@/components/layout/Header";
@@ -47,6 +49,14 @@ export default async function MediaPage({ params }: MediaPageProps) {
     queryClient.prefetchQuery({
       queryKey: queryKeys.headerSettings(),
       queryFn: () => fetchDefaultTheme(supabase),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.mapEnabled(),
+      queryFn: () => fetchMapEnabled(supabase),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.streetViewUsage(),
+      queryFn: () => fetchStreetViewLoadCount(supabase),
     }),
   ]);
 

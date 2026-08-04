@@ -4,11 +4,14 @@ import { useRef, type ChangeEvent } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
 import { CameraIcon, PhotoLibraryIcon } from "@/components/ui/icons";
+import { getBrowserLocation, type GpsCoords } from "@/lib/media/getBrowserLocation";
+
+export type UploadSource = "camera" | "gallery";
 
 interface UploadSheetProps {
   open: boolean;
   onClose: () => void;
-  onFilesSelected: (files: File[]) => void;
+  onFilesSelected: (files: File[], source: UploadSource, location?: GpsCoords) => void;
 }
 
 const ACCEPTED_TYPES = "image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm";
@@ -16,12 +19,38 @@ const ACCEPTED_TYPES = "image/jpeg,image/png,image/webp,video/mp4,video/quicktim
 export function UploadSheet({ open, onClose, onFilesSelected }: UploadSheetProps) {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  // Se pide en cuanto se toca "Cámara" (ver handleCameraClick), no solo al
+  // volver de hacer la foto: algunos navegadores (Safari en iOS entre ellos)
+  // sólo conceden el permiso de ubicación — o directamente no muestran el
+  // diálogo — si se pide en respuesta directa e inmediata a un toque real.
+  // Pero abrir la cámara nativa, encuadrar y disparar casi siempre tarda más
+  // que el timeout de getBrowserLocation, y mientras esa UI nativa tiene el
+  // foco la geolocalización puede quedar en pausa — así que este primer
+  // intento casi siempre ya se resolvió a `undefined` cuando el archivo
+  // vuelve. Por eso handleCameraChange reintenta una vez más justo al volver,
+  // momento en que la pestaña ya recuperó el foco y no compite con la cámara.
+  const pendingLocationRef = useRef<Promise<GpsCoords | undefined> | null>(null);
 
-  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+  function handleCameraClick() {
+    pendingLocationRef.current = getBrowserLocation();
+    cameraInputRef.current?.click();
+  }
+
+  async function handleCameraChange(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
     event.target.value = "";
     onClose();
-    if (files.length > 0) onFilesSelected(files);
+    if (files.length === 0) return;
+    const tapTimeLocation = await pendingLocationRef.current;
+    const location = tapTimeLocation ?? (await getBrowserLocation());
+    onFilesSelected(files, "camera", location);
+  }
+
+  function handleGalleryChange(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    onClose();
+    if (files.length > 0) onFilesSelected(files, "gallery");
   }
 
   return (
@@ -32,7 +61,7 @@ export function UploadSheet({ open, onClose, onFilesSelected }: UploadSheetProps
             variant="glass"
             size="lg"
             className="w-full justify-start px-4"
-            onClick={() => cameraInputRef.current?.click()}
+            onClick={handleCameraClick}
           >
             <CameraIcon className="h-5 w-5" /> Cámara
           </Button>
@@ -57,7 +86,7 @@ export function UploadSheet({ open, onClose, onFilesSelected }: UploadSheetProps
         accept={ACCEPTED_TYPES}
         capture="environment"
         className="hidden"
-        onChange={handleChange}
+        onChange={handleCameraChange}
       />
       {/* La galería del dispositivo sí permite elegir varios de una vez. */}
       <input
@@ -66,7 +95,7 @@ export function UploadSheet({ open, onClose, onFilesSelected }: UploadSheetProps
         accept={ACCEPTED_TYPES}
         multiple
         className="hidden"
-        onChange={handleChange}
+        onChange={handleGalleryChange}
       />
     </>
   );
