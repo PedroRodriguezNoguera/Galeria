@@ -10,6 +10,8 @@ import { scaleFadeIn } from "@/animations/variants";
 
 interface GalleryTileProps {
   media: MediaWithReactions;
+  /** Presente cuando el tile se pinta dentro de una carpeta expandida (ver AlbumsSection): se lo pasa al visor para que pueda deslizar entre las fotos de esa carpeta (ver useAdjacentMedia). */
+  albumId?: string;
 }
 
 // Mínimo viable: por debajo de esto no da tiempo a que llegue ni un
@@ -21,13 +23,14 @@ const LONG_PRESS_MS = 100;
 const MOVE_CANCEL_PX = 10;
 const HAPTIC_MS = 15;
 
-export function GalleryTile({ media }: GalleryTileProps) {
+export function GalleryTile({ media, albumId }: GalleryTileProps) {
   const router = useRouter();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startPosRef = useRef<{ x: number; y: number } | null>(null);
   // El click sintético del navegador tras soltar el dedo llegaría después de
   // esta navegación: se marca para que el propio onClick lo ignore.
   const longPressFiredRef = useRef(false);
+  const href = albumId ? `/media/${media.id}?album=${albumId}` : `/media/${media.id}`;
 
   function clearTimer() {
     if (timerRef.current) {
@@ -48,7 +51,7 @@ export function GalleryTile({ media }: GalleryTileProps) {
       // de la lista, no una página nueva): sin esto Next igualmente sube el
       // fondo al principio como si fuera una navegación real, y el salto se
       // nota doble (al abrir y otra vez al cerrar, al corregirlo).
-      router.push(`/media/${media.id}`, { scroll: false });
+      router.push(href, { scroll: false });
     }, LONG_PRESS_MS);
   }
 
@@ -75,7 +78,7 @@ export function GalleryTile({ media }: GalleryTileProps) {
       className="relative aspect-square overflow-hidden rounded-glass-sm bg-glass"
     >
       <Link
-        href={`/media/${media.id}`}
+        href={href}
         scroll={false}
         className="relative block h-full w-full [-webkit-touch-callout:none]"
         onClick={handleClick}

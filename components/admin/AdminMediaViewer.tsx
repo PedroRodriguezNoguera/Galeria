@@ -18,6 +18,7 @@ import {
 import { springGentle, springSwipe, fadeTransition } from "@/animations/springs";
 import { slideHorizontal } from "@/animations/variants";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useZoomSafeDrag } from "@/hooks/useZoomSafeDrag";
 
 interface AdminMediaViewerProps {
   media: MediaWithReactions;
@@ -56,6 +57,7 @@ export function AdminMediaViewer({
   // Con la imagen ampliada, el arrastre del panel exterior se desactiva:
   // si no, compite con el pan de la imagen. Ver PhotoZoomView.onZoomChange.
   const [isZoomed, setIsZoomed] = useState(false);
+  const { x, y, dragDisabled } = useZoomSafeDrag(isZoomed, prefersReducedMotion);
   const [isPending, startTransition] = useTransition();
 
   function requestClose() {
@@ -125,7 +127,8 @@ export function AdminMediaViewer({
           />
 
           <motion.div
-            drag={prefersReducedMotion || isZoomed ? false : true}
+            style={{ x, y }}
+            drag={!dragDisabled}
             dragConstraints={{ top: 0, bottom: 0, left: 0, right: 0 }}
             dragElastic={{ top: 0, bottom: 0.6, left: 0.5, right: 0.5 }}
             onDragEnd={handleDragEnd}

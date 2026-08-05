@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      albums: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       bingo_cards: {
         Row: {
           card_index: number
@@ -142,6 +160,7 @@ export type Database = {
       }
       media: {
         Row: {
+          album_id: string | null
           created_at: string
           duration_ms: number | null
           featured_at: string | null
@@ -163,6 +182,7 @@ export type Database = {
           width: number
         }
         Insert: {
+          album_id?: string | null
           created_at?: string
           duration_ms?: number | null
           featured_at?: string | null
@@ -184,6 +204,7 @@ export type Database = {
           width: number
         }
         Update: {
+          album_id?: string | null
           created_at?: string
           duration_ms?: number | null
           featured_at?: string | null
@@ -204,7 +225,15 @@ export type Database = {
           thumbnail_path?: string
           width?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "media_album_id_fkey"
+            columns: ["album_id"]
+            isOneToOne: false
+            referencedRelation: "albums"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       people: {
         Row: {

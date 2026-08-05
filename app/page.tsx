@@ -6,9 +6,11 @@ import { fetchDestacadosEnabled, fetchMapEnabled } from "@/lib/data/featureSetti
 import { fetchFeaturedMedia } from "@/lib/data/featured";
 import { fetchStreetViewLoadCount } from "@/lib/data/streetViewUsage";
 import { fetchBingoSettings } from "@/lib/data/bingoSettings";
+import { fetchAlbums } from "@/lib/data/albums";
 import { queryKeys } from "@/lib/queryKeys";
 import { FooterCaption } from "@/components/layout/FooterCaption";
 import { GalleryGrid } from "@/components/gallery/GalleryGrid";
+import { AlbumsSection } from "@/components/gallery/AlbumsSection";
 import { FeaturedCarousel } from "@/components/gallery/FeaturedCarousel";
 import { UploadFab } from "@/components/upload/UploadFab";
 import { EventCalendarFab } from "@/components/schedule/EventCalendarFab";
@@ -26,7 +28,7 @@ export default async function GalleryPage() {
   // MediaViewer). destacadosEnabled y bingoSettings se deciden aquí mismo (no
   // por React Query) porque condicionan qué se renderiza en el propio
   // servidor: si no, habría un parpadeo al hidratar.
-  const [, , , , , destacadosEnabled, bingoSettings] = await Promise.all([
+  const [, , , , , destacadosEnabled, bingoSettings, albums] = await Promise.all([
     queryClient.prefetchInfiniteQuery({
       queryKey: queryKeys.gallery(),
       queryFn: () => fetchGalleryPage(supabase, null),
@@ -50,6 +52,7 @@ export default async function GalleryPage() {
     }),
     fetchDestacadosEnabled(supabase),
     fetchBingoSettings(supabase),
+    fetchAlbums(supabase),
   ]);
 
   // Sólo se piden las fotos destacadas si de verdad se van a mostrar.
@@ -61,6 +64,7 @@ export default async function GalleryPage() {
         {/* pt: dejar sitio al header, que ahora es `fixed` y ya no ocupa espacio en el flujo. */}
         <main className="mx-auto w-full max-w-2xl flex-1 px-3 pb-28 pt-[calc(env(safe-area-inset-top)+7rem)] lg:max-w-4xl xl:max-w-5xl">
           <GalleryGrid />
+          {albums.length > 0 ? <AlbumsSection albums={albums} /> : null}
         </main>
         <FooterCaption />
         <UploadFab />

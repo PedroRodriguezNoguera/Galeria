@@ -15,6 +15,7 @@ import { useAdjacentMedia } from "@/hooks/useAdjacentMedia";
 import { useNearbyMedia } from "@/hooks/useNearbyMedia";
 import { useMapEnabled } from "@/hooks/useMapEnabled";
 import { useStreetViewBlockedByUsage } from "@/hooks/useStreetViewUsage";
+import { useZoomSafeDrag } from "@/hooks/useZoomSafeDrag";
 import { flushPendingActivity } from "@/lib/events/activityBus";
 import { requestScrollToMedia } from "@/lib/events/scrollBus";
 import { springGentle, springSwipe, fadeTransition } from "@/animations/springs";
@@ -33,6 +34,8 @@ interface MediaViewerProps {
   media: MediaRecord;
   initialReactionCounts?: ReactionCounts;
   initialMyReactionEmojis?: string[];
+  /** Presente cuando se abrió desde una carpeta expandida: ver useAdjacentMedia. */
+  albumId?: string | null;
   onClose: () => void;
 }
 
@@ -67,6 +70,7 @@ export function MediaViewer({
   media,
   initialReactionCounts,
   initialMyReactionEmojis,
+  albumId,
   onClose,
 }: MediaViewerProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -84,8 +88,9 @@ export function MediaViewer({
   // entre fotos) se desactiva: si no, compite con el pan de la imagen y el
   // gesto se siente inestable. Ver PhotoZoomView.onZoomChange.
   const [isZoomed, setIsZoomed] = useState(false);
+  const { x, y, dragDisabled } = useZoomSafeDrag(isZoomed, prefersReducedMotion);
   const [streetViewOpen, setStreetViewOpen] = useState(false);
-  const { prevMedia, nextMedia } = useAdjacentMedia(activeMedia.id);
+  const { prevMedia, nextMedia } = useAdjacentMedia(activeMedia.id, albumId);
   const { next: nextNearby, prev: prevNearby } = useNearbyMedia(activeMedia.id);
   const mapEnabled = useMapEnabled();
   // Si este mes ya se ha acercado al límite gratis de Street View, se oculta
@@ -116,7 +121,10 @@ export function MediaViewer({
     // server-side y remonta el visor (se veía como "cerrar y volver a abrir").
     // Sólo actualiza la URL visible/compartible; el propio componente nunca
     // se desmonta al deslizar, así la transición lateral es continua.
-    window.history.replaceState(window.history.state, "", `/media/${target.id}`);
+    // Conserva el ?album= si venía de una carpeta: si no, un refresco a mitad
+    // de carpeta perdería el contexto y con él el deslizar entre sus fotos.
+    const url = albumId ? `/media/${target.id}?album=${albumId}` : `/media/${target.id}`;
+    window.history.replaceState(window.history.state, "", url);
   }
 
   function handleDragEnd(_event: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) {
@@ -173,7 +181,8 @@ export function MediaViewer({
 
           <motion.div
             layoutId={`media-${activeMedia.id}`}
-            drag={prefersReducedMotion || isZoomed ? false : true}
+            style={{ x, y }}
+            drag={!dragDisabled}
             dragConstraints={{ top: 0, bottom: 0, left: 0, right: 0 }}
             dragElastic={{ top: 0, bottom: 0.6, left: 0.5, right: 0.5 }}
             onDragEnd={handleDragEnd}

@@ -47,26 +47,66 @@ export function EventWheelRow({
   scrollY,
   onSelect,
 }: EventWheelRowProps) {
-  const scale = useTransform(
+  // El encogimiento es sólo visual (transform), pero la fila que lo contiene
+  // mantiene su alto fijo siempre (imprescindible para que el centrado y el
+  // scroll-snap sigan siendo exactos) — así que cuanto más se encoge una
+  // tarjeta, más hueco vacío deja dentro de su propia fila, y eso se veía
+  // como espacio de más hacia las vecinas. Intentar compensarlo con márgenes
+  // no sirve (el centrado del propio flex los absorbe), así que en vez de
+  // corregir el hueco se reduce a casi nada: el rango de escala fuera del
+  // centro es muy sutil, y es la opacidad — que no ocupa espacio — la que
+  // lleva casi todo el peso de marcar la distancia al centro. La propia
+  // tarjeta central, en cambio, sí crece por encima de 1: al ser un único
+  // punto (no una caída que se repite fila a fila) no genera el mismo hueco
+  // acumulado, y así resalta más sobre el resto.
+  const breakpoints = [
+    center - 2 * FALLOFF_STEP,
+    center - FALLOFF_STEP,
+    center,
+    center + FALLOFF_STEP,
+    center + 2 * FALLOFF_STEP,
+  ];
+  // Sólo vertical: si el ancho también escalara con `scale`, la central (por
+  // encima de 1) se saldría por los lados de la fila y se vería recortada.
+  // El ancho, en cambio, se controla aparte con una propiedad de verdad (no
+  // un transform), así la central puede llegar a ocupar el 100% sin cortes.
+  const scaleY = useTransform(scrollY, breakpoints, [0.94, 0.97, 1.08, 0.97, 0.94]);
+  const width = useTransform(scrollY, breakpoints, ["90%", "95%", "100%", "95%", "90%"]);
+  const opacity = useTransform(scrollY, breakpoints, [0.3, 0.6, 1, 0.6, 0.3]);
+  // Cristal más marcado en la central (fondo y borde más presentes), en vez
+  // de depender sólo del tamaño para que destaque.
+  const backgroundColor = useTransform(
     scrollY,
-    [center - 2 * FALLOFF_STEP, center - FALLOFF_STEP, center, center + FALLOFF_STEP, center + 2 * FALLOFF_STEP],
-    [0.74, 0.88, 1, 0.88, 0.74],
+    breakpoints,
+    [
+      "rgba(255,255,255,0.14)",
+      "rgba(255,255,255,0.14)",
+      "rgba(255,255,255,0.26)",
+      "rgba(255,255,255,0.14)",
+      "rgba(255,255,255,0.14)",
+    ],
   );
-  const opacity = useTransform(
+  const borderColor = useTransform(
     scrollY,
-    [center - 2 * FALLOFF_STEP, center - FALLOFF_STEP, center, center + FALLOFF_STEP, center + 2 * FALLOFF_STEP],
-    [0.32, 0.62, 1, 0.62, 0.32],
+    breakpoints,
+    [
+      "rgba(255,255,255,0.5)",
+      "rgba(255,255,255,0.5)",
+      "rgba(255,255,255,0.85)",
+      "rgba(255,255,255,0.5)",
+      "rgba(255,255,255,0.5)",
+    ],
   );
 
   return (
     <div
-      className="flex items-center px-1"
+      className="flex items-center justify-center px-1"
       style={{ height: itemHeight, scrollSnapAlign: "center" }}
       onClick={onSelect}
     >
       <motion.div
-        style={{ scale, opacity, height: itemHeight - 4 }}
-        className="relative flex w-full items-center justify-between gap-3 overflow-hidden rounded-glass-md border border-glass-border bg-glass px-3 py-2.5"
+        style={{ scaleY, width, opacity, backgroundColor, borderColor, height: itemHeight - 4 }}
+        className="relative flex items-center justify-between gap-3 overflow-hidden rounded-glass-md border px-3 py-2.5"
       >
         {active ? <ActiveEventConfetti /> : null}
         <div className="relative z-10 min-w-0 flex-1">

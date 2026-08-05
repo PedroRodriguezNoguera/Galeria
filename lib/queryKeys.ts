@@ -6,4 +6,5 @@ export const queryKeys = {
   mapEnabled: () => ["map-enabled"] as const,
   geolocatedMedia: () => ["geolocated-media"] as const,
   streetViewUsage: () => ["street-view-usage"] as const,
+  albumMedia: (albumId: string) => ["album-media", albumId] as const,
 };

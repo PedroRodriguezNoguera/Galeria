@@ -35,6 +35,9 @@ export async function fetchGalleryPage(
     .eq("is_unlisted", false)
     // Ocultadas desde moderación (ver lib/actions/moderatePost.ts): tampoco.
     .eq("is_hidden", false)
+    // Asignadas a una carpeta (ver lib/actions/albums.ts): dejan de verse en el
+    // feed cronológico, sólo se ven dentro de su carpeta (components/gallery/AlbumsSection.tsx).
+    .is("album_id", null)
     .order("sort_date", { ascending: false })
     .order("id", { ascending: false })
     .limit(GALLERY_PAGE_SIZE);

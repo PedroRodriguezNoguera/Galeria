@@ -2,11 +2,10 @@ import { notFound } from "next/navigation";
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/server";
 import { fetchGalleryPage } from "@/lib/data/gallery";
-import { fetchMediaById, fetchReactionCounts } from "@/lib/data/media";
+import { fetchMediaById } from "@/lib/data/media";
 import { fetchEventSchedule, fetchDefaultTheme } from "@/lib/data/eventSchedule";
 import { fetchMapEnabled } from "@/lib/data/featureSettings";
 import { fetchStreetViewLoadCount } from "@/lib/data/streetViewUsage";
-import { getMyReactionEmojis } from "@/lib/actions/getMyReactionEmojis";
 import { queryKeys } from "@/lib/queryKeys";
 import { Header } from "@/components/layout/Header";
 import { FooterCaption } from "@/components/layout/FooterCaption";
@@ -17,19 +16,18 @@ import { EventCalendarFab } from "@/components/schedule/EventCalendarFab";
 
 interface MediaPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ album?: string }>;
 }
 
-export default async function MediaPage({ params }: MediaPageProps) {
+export default async function MediaPage({ params, searchParams }: MediaPageProps) {
   const { id } = await params;
+  const { album } = await searchParams;
   const supabase = await createClient();
 
+  // Las reacciones no se esperan aquí: useReactions las pide por su cuenta en
+  // cuanto el visor monta (ver InterceptedMediaModal para el motivo completo).
   const media = await fetchMediaById(supabase, id);
   if (!media || media.is_hidden) notFound();
-
-  const [initialReactionCounts, initialMyReactionEmojis] = await Promise.all([
-    fetchReactionCounts(supabase, id),
-    getMyReactionEmojis(id),
-  ]);
 
   const queryClient = new QueryClient();
   // Las 3 consultas en paralelo: la galería, y las 2 que decide qué tema
@@ -68,11 +66,7 @@ export default async function MediaPage({ params }: MediaPageProps) {
         <GalleryGrid />
       </main>
       <FooterCaption />
-      <StandaloneMediaViewer
-        media={media}
-        initialReactionCounts={initialReactionCounts}
-        initialMyReactionEmojis={initialMyReactionEmojis}
-      />
+      <StandaloneMediaViewer media={media} albumId={album} />
       <UploadFab />
       <EventCalendarFab />
     </HydrationBoundary>

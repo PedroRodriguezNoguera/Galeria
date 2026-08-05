@@ -4,8 +4,10 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import type { MediaWithReactions } from "@/types/media";
+import type { AlbumWithStats } from "@/types/album";
 import { AdminGalleryTile } from "./AdminGalleryTile";
 import { AdminMediaViewer } from "./AdminMediaViewer";
+import { SaveToAlbumSheet } from "./SaveToAlbumSheet";
 import { staggerChildren, slideUpSheet } from "@/animations/variants";
 import { springSheet, springSnappy, fadeTransition } from "@/animations/springs";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -14,9 +16,11 @@ import { GlassPanel } from "@/components/ui/GlassPanel";
 import { Spinner } from "@/components/ui/Spinner";
 import { hidePosts, deletePostsPermanently } from "@/lib/actions/moderatePost";
 import { addToFeatured, removeFromFeatured } from "@/lib/actions/featured";
+import { removeMediaFromAlbum } from "@/lib/actions/albums";
 
 interface AdminGalleryGridProps {
   items: MediaWithReactions[];
+  albums: AlbumWithStats[];
 }
 
 type SortMode = "recent" | "mostReactions" | "leastReactions";
@@ -27,14 +31,25 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: "leastReactions", label: "Menos reacciones" },
 ];
 
-export function AdminGalleryGrid({ items }: AdminGalleryGridProps) {
+export function AdminGalleryGrid({ items, albums }: AdminGalleryGridProps) {
   const router = useRouter();
   const prefersReducedMotion = usePrefersReducedMotion();
   const [openMediaId, setOpenMediaId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortMode>("recent");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [albumSheetOpen, setAlbumSheetOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const selectionMode = selectedIds.size > 0;
+  // Si todo lo seleccionado ya comparte la misma carpeta, el botón se
+  // convierte en "quitar de carpeta"; si se mezcla con algo sin carpeta o de
+  // otra distinta, vuelve a ofrecer guardar (mismo criterio que selectedFeaturedState).
+  const selectedAlbumId = useMemo(() => {
+    if (selectedIds.size === 0) return null;
+    const selected = items.filter((item) => selectedIds.has(item.id));
+    const firstAlbumId = selected[0]?.album_id ?? null;
+    if (!firstAlbumId) return null;
+    return selected.every((item) => item.album_id === firstAlbumId) ? firstAlbumId : null;
+  }, [items, selectedIds]);
   // Si TODO lo seleccionado ya está destacado, el botón se convierte en
   // "quitar de destacados" en vez de volver a destacar (que sería un no-op);
   // en cuanto se mezcla con algo que no lo está, vuelve a ofrecer destacar
@@ -100,6 +115,12 @@ export function AdminGalleryGrid({ items }: AdminGalleryGridProps) {
       clearSelection();
       router.refresh();
     });
+  }
+
+  function handleAlbumSaved() {
+    setAlbumSheetOpen(false);
+    clearSelection();
+    router.refresh();
   }
 
   function handleBulkDelete() {
@@ -236,6 +257,29 @@ export function AdminGalleryGrid({ items }: AdminGalleryGridProps) {
                   </AnimatePresence>
                 </Button>
                 <Button
+                  variant={selectedAlbumId ? "primary" : "glass"}
+                  size="sm"
+                  className="flex-1 overflow-hidden"
+                  disabled={isPending}
+                  onClick={() =>
+                    selectedAlbumId
+                      ? runBulkAction(removeMediaFromAlbum)
+                      : setAlbumSheetOpen(true)
+                  }
+                >
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    <motion.span
+                      key={selectedAlbumId ? "remove-album" : "save-album"}
+                      initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: prefersReducedMotion ? 0 : -8 }}
+                      transition={prefersReducedMotion ? fadeTransition : springSnappy}
+                    >
+                      {selectedAlbumId ? "Quitar de carpeta" : "Carpeta 📁"}
+                    </motion.span>
+                  </AnimatePresence>
+                </Button>
+                <Button
                   variant="glass"
                   size="sm"
                   className="flex-1"
@@ -258,6 +302,14 @@ export function AdminGalleryGrid({ items }: AdminGalleryGridProps) {
           </motion.div>
         ) : null}
       </AnimatePresence>
+
+      <SaveToAlbumSheet
+        open={albumSheetOpen}
+        onClose={() => setAlbumSheetOpen(false)}
+        albums={albums}
+        selectedIds={Array.from(selectedIds)}
+        onSaved={handleAlbumSaved}
+      />
     </>
   );
 }

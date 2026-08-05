@@ -125,6 +125,20 @@ export function AdminGalleryTile({
           </span>
         ) : null}
 
+        {media.album_id ? (
+          <span
+            className={cn(
+              "absolute top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-glass-border bg-glass-strong text-[11px] backdrop-blur-md backdrop-saturate-150",
+              // Si ya hay insignia de destacado, se coloca al lado en vez de encima.
+              media.is_featured ? "left-7" : "left-1.5",
+            )}
+            aria-hidden="true"
+            title="Ya está en una carpeta"
+          >
+            📁
+          </span>
+        ) : null}
+
         <AnimatePresence>
           {selectionMode ? (
             <motion.span

@@ -49,7 +49,11 @@ export function PhotoZoomView({ media, onZoomChange }: PhotoZoomViewProps) {
         contentClass="!h-full !w-full !flex items-center justify-center"
       >
         <div className="relative h-full w-full">
-          {/* miniatura de baja calidad: desaparece en cuanto la original está lista */}
+          {/* miniatura de baja calidad: desaparece en cuanto la original está lista.
+              Mismo `sizes` que MediaThumbnail (la rejilla): así next/image pide la
+              MISMA variante ya optimizada que el navegador acaba de cachear al
+              mostrar la miniatura ahí, en vez de generar una nueva por tener un
+              `sizes` distinto — si no, ni siquiera este placeholder era instantáneo. */}
           <Image
             src={thumbnailUrl}
             alt=""
@@ -60,7 +64,7 @@ export function PhotoZoomView({ media, onZoomChange }: PhotoZoomViewProps) {
               "scale-105 object-contain blur-lg transition-opacity duration-300",
               fullImageLoaded ? "opacity-0" : "opacity-100",
             )}
-            sizes="(min-width: 640px) 512px, 100vw"
+            sizes="(max-width: 640px) 33vw, 220px"
           />
           <Image
             src={url}
