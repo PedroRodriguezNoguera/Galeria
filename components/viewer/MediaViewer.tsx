@@ -91,7 +91,7 @@ export function MediaViewer({
   const { x, y, dragDisabled } = useZoomSafeDrag(isZoomed, prefersReducedMotion);
   const [streetViewOpen, setStreetViewOpen] = useState(false);
   const { prevMedia, nextMedia } = useAdjacentMedia(activeMedia.id, albumId);
-  const { next: nextNearby, prev: prevNearby } = useNearbyMedia(activeMedia.id);
+  const { next: nextNearby, prev: prevNearby } = useNearbyMedia(activeMedia.id, albumId);
   const mapEnabled = useMapEnabled();
   // Si este mes ya se ha acercado al límite gratis de Street View, se oculta
   // el icono directamente (ver STREET_VIEW_MONTHLY_SAFE_LIMIT): mejor no
