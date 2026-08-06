@@ -7,6 +7,7 @@ import { MediaThumbnail } from "@/components/gallery/MediaThumbnail";
 import { scaleFadeIn, iconPop, fadeIn } from "@/animations/variants";
 import { springSnappy, springPop, fadeTransition } from "@/animations/springs";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { CheckIcon, EyeOffIcon, FolderIcon, StarIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils/cn";
 
 interface AdminGalleryTileProps {
@@ -108,34 +109,35 @@ export function AdminGalleryTile({
         {media.is_hidden ? (
           <span
             className={cn(
-              "absolute inset-0 flex items-center justify-center bg-scrim backdrop-blur-[1px]",
-              "text-[11px] font-medium text-white",
+              "absolute inset-0 flex flex-col items-center justify-center gap-1 bg-scrim backdrop-blur-[1px]",
+              "text-white",
             )}
           >
-            Oculta
+            <EyeOffIcon className="h-5 w-5" />
+            <span className="text-[11px] font-medium">Oculta</span>
           </span>
         ) : null}
 
         {media.is_featured ? (
           <span
-            className="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-glass-border bg-glass-strong text-[11px] backdrop-blur-md backdrop-saturate-150"
+            className="absolute left-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-glass-border bg-glass-strong text-amber-500 backdrop-blur-md backdrop-saturate-150"
             aria-hidden="true"
           >
-            ⭐
+            <StarIcon className="h-3 w-3" filled />
           </span>
         ) : null}
 
         {media.album_id ? (
           <span
             className={cn(
-              "absolute top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-glass-border bg-glass-strong text-[11px] backdrop-blur-md backdrop-saturate-150",
+              "absolute top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-glass-border bg-glass-strong text-blue-500 backdrop-blur-md backdrop-saturate-150",
               // Si ya hay insignia de destacado, se coloca al lado en vez de encima.
               media.is_featured ? "left-7" : "left-1.5",
             )}
             aria-hidden="true"
             title="Ya está en una carpeta"
           >
-            📁
+            <FolderIcon className="h-3 w-3" filled />
           </span>
         ) : null}
 
@@ -166,14 +168,14 @@ export function AdminGalleryTile({
               exit="hidden"
               transition={prefersReducedMotion ? fadeTransition : springPop}
               className={cn(
-                "absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border text-[11px] font-bold leading-none",
+                "absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border backdrop-blur-md backdrop-saturate-150",
                 selected
                   ? "border-foreground bg-foreground text-background"
                   : "border-white/70 bg-black/20 text-transparent",
               )}
               aria-hidden="true"
             >
-              ✓
+              <CheckIcon className="h-3 w-3" />
             </motion.span>
           ) : null}
         </AnimatePresence>

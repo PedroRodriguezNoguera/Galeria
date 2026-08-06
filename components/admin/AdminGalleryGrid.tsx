@@ -14,9 +14,11 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { Button } from "@/components/ui/Button";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { Spinner } from "@/components/ui/Spinner";
-import { hidePosts, deletePostsPermanently } from "@/lib/actions/moderatePost";
+import { CloseIcon, EyeIcon, EyeOffIcon, FolderIcon, StarIcon, TrashIcon } from "@/components/ui/icons";
+import { hidePosts, showPosts, deletePostsPermanently } from "@/lib/actions/moderatePost";
 import { addToFeatured, removeFromFeatured } from "@/lib/actions/featured";
 import { removeMediaFromAlbum } from "@/lib/actions/albums";
+import { cn } from "@/lib/utils/cn";
 
 interface AdminGalleryGridProps {
   items: MediaWithReactions[];
@@ -30,6 +32,51 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: "mostReactions", label: "Más reacciones" },
   { value: "leastReactions", label: "Menos reacciones" },
 ];
+
+interface SelectionActionButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  tone?: "default" | "destructive";
+  disabled?: boolean;
+  onClick: () => void;
+}
+
+/**
+ * Botón icono-sobre-etiqueta al estilo de las apps de fotos nativas: en vez
+ * de texto que cambia de longitud ("Destacar" / "Quitar de destacados") y se
+ * aprieta o rompe en pantallas estrechas, la etiqueta es fija y corta, y el
+ * estado activo se ve en el relleno del icono y el fondo del botón.
+ */
+function SelectionActionButton({
+  icon,
+  label,
+  active = false,
+  tone = "default",
+  disabled = false,
+  onClick,
+}: SelectionActionButtonProps) {
+  return (
+    <motion.button
+      type="button"
+      whileTap={disabled ? undefined : { scale: 0.92 }}
+      transition={springSnappy}
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "flex flex-1 flex-col items-center gap-1 rounded-glass-md py-2.5 text-[11px] font-medium transition-colors disabled:opacity-40 disabled:pointer-events-none",
+        tone === "destructive"
+          ? "text-red-500"
+          : active
+            ? "bg-foreground text-background"
+            : "text-foreground-muted",
+      )}
+    >
+      <span className="flex h-5 w-5 items-center justify-center">{icon}</span>
+      {label}
+    </motion.button>
+  );
+}
 
 export function AdminGalleryGrid({ items, albums }: AdminGalleryGridProps) {
   const router = useRouter();
@@ -58,6 +105,13 @@ export function AdminGalleryGrid({ items, albums }: AdminGalleryGridProps) {
     if (selectedIds.size === 0) return false;
     const selected = items.filter((item) => selectedIds.has(item.id));
     return selected.length > 0 && selected.every((item) => item.is_featured);
+  }, [items, selectedIds]);
+  // Mismo criterio: si TODO lo seleccionado ya está oculto, el botón pasa a
+  // "Mostrar" (deshacerlo) en vez de volver a ocultar, que sería un no-op.
+  const selectedHiddenState = useMemo(() => {
+    if (selectedIds.size === 0) return false;
+    const selected = items.filter((item) => selectedIds.has(item.id));
+    return selected.length > 0 && selected.every((item) => item.is_hidden);
   }, [items, selectedIds]);
 
   // Orden sólo para esta pantalla: no toca la consulta del servidor (que
@@ -151,15 +205,6 @@ export function AdminGalleryGrid({ items, albums }: AdminGalleryGridProps) {
             {option.label}
           </Button>
         ))}
-        {/* Descarga directa (GET con Content-Disposition: attachment), no una
-            Server Action: así el navegador la trata como una descarga nativa
-            en streaming, sin pasar el ZIP entero por memoria del cliente. */}
-        <a
-          href="/admin/export"
-          className="ml-auto inline-flex h-8 items-center justify-center gap-1.5 rounded-glass-pill border border-glass-border bg-glass px-3 text-xs font-medium text-foreground backdrop-blur-xl transition-colors"
-        >
-          Exportar todo ⬇
-        </a>
       </div>
 
       <motion.div
@@ -231,72 +276,52 @@ export function AdminGalleryGrid({ items, albums }: AdminGalleryGridProps) {
                   aria-label="Cancelar selección"
                   className="ml-auto flex h-7 w-7 items-center justify-center rounded-full border border-glass-border bg-glass text-foreground-muted disabled:opacity-40"
                 >
-                  ✕
+                  <CloseIcon className="h-3.5 w-3.5" />
                 </button>
               </div>
-              <div className="flex gap-1.5">
-                <Button
-                  variant={selectedFeaturedState ? "primary" : "glass"}
-                  size="sm"
-                  className="flex-1 overflow-hidden"
+              <div className="flex gap-1">
+                <SelectionActionButton
+                  icon={<StarIcon className="h-5 w-5" filled={selectedFeaturedState} />}
+                  label="Destacar"
+                  active={selectedFeaturedState}
                   disabled={isPending}
                   onClick={() =>
                     runBulkAction(selectedFeaturedState ? removeFromFeatured : addToFeatured)
                   }
-                >
-                  <AnimatePresence mode="popLayout" initial={false}>
-                    <motion.span
-                      key={selectedFeaturedState ? "unfeature" : "feature"}
-                      initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: prefersReducedMotion ? 0 : -8 }}
-                      transition={prefersReducedMotion ? fadeTransition : springSnappy}
-                    >
-                      {selectedFeaturedState ? "Quitar de destacados" : "Destacar ⭐"}
-                    </motion.span>
-                  </AnimatePresence>
-                </Button>
-                <Button
-                  variant={selectedAlbumId ? "primary" : "glass"}
-                  size="sm"
-                  className="flex-1 overflow-hidden"
+                />
+                <SelectionActionButton
+                  icon={<FolderIcon className="h-5 w-5" filled={selectedAlbumId !== null} />}
+                  label="Carpeta"
+                  active={selectedAlbumId !== null}
                   disabled={isPending}
                   onClick={() =>
                     selectedAlbumId
                       ? runBulkAction(removeMediaFromAlbum)
                       : setAlbumSheetOpen(true)
                   }
-                >
-                  <AnimatePresence mode="popLayout" initial={false}>
-                    <motion.span
-                      key={selectedAlbumId ? "remove-album" : "save-album"}
-                      initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: prefersReducedMotion ? 0 : -8 }}
-                      transition={prefersReducedMotion ? fadeTransition : springSnappy}
-                    >
-                      {selectedAlbumId ? "Quitar de carpeta" : "Carpeta 📁"}
-                    </motion.span>
-                  </AnimatePresence>
-                </Button>
-                <Button
-                  variant="glass"
-                  size="sm"
-                  className="flex-1"
+                />
+                <SelectionActionButton
+                  icon={
+                    selectedHiddenState ? (
+                      <EyeIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeOffIcon className="h-5 w-5" />
+                    )
+                  }
+                  label={selectedHiddenState ? "Mostrar" : "Ocultar"}
+                  active={selectedHiddenState}
                   disabled={isPending}
-                  onClick={() => runBulkAction(hidePosts)}
-                >
-                  Ocultar
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="flex-1"
+                  onClick={() =>
+                    runBulkAction(selectedHiddenState ? showPosts : hidePosts)
+                  }
+                />
+                <SelectionActionButton
+                  icon={<TrashIcon className="h-5 w-5" />}
+                  label="Eliminar"
+                  tone="destructive"
                   disabled={isPending}
                   onClick={handleBulkDelete}
-                >
-                  Eliminar
-                </Button>
+                />
               </div>
             </GlassPanel>
           </motion.div>

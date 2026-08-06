@@ -11,28 +11,18 @@ import { Spinner } from "@/components/ui/Spinner";
 import { scaleFadeIn, staggerChildren } from "@/animations/variants";
 import { springSnappy, springPop, fadeTransition } from "@/animations/springs";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { setDestacadosEnabled, setMapEnabled, removeFromFeatured } from "@/lib/actions/featured";
-import { STREET_VIEW_MONTHLY_FREE_LIMIT, STREET_VIEW_MONTHLY_SAFE_LIMIT } from "@/constants/limits";
+import { setDestacadosEnabled, removeFromFeatured } from "@/lib/actions/featured";
 
 interface DestacadosScreenProps {
   items: MediaWithReactions[];
   destacadosEnabled: boolean;
-  mapEnabled: boolean;
-  streetViewLoadCount: number;
 }
 
-export function DestacadosScreen({
-  items,
-  destacadosEnabled,
-  mapEnabled,
-  streetViewLoadCount,
-}: DestacadosScreenProps) {
+export function DestacadosScreen({ items, destacadosEnabled }: DestacadosScreenProps) {
   const router = useRouter();
   const prefersReducedMotion = usePrefersReducedMotion();
   const [enabled, setEnabled] = useState(destacadosEnabled);
   const [toggleError, setToggleError] = useState<string | null>(null);
-  const [mapToggleEnabled, setMapToggleEnabled] = useState(mapEnabled);
-  const [mapToggleError, setMapToggleError] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -47,21 +37,6 @@ export function DestacadosScreen({
       } catch (err) {
         setEnabled(previous);
         setToggleError(err instanceof Error ? err.message : "No se pudo guardar.");
-      }
-    });
-  }
-
-  function handleMapToggle() {
-    const previous = mapToggleEnabled;
-    const next = !mapToggleEnabled;
-    setMapToggleEnabled(next);
-    setMapToggleError(null);
-    startTransition(async () => {
-      try {
-        await setMapEnabled(next);
-      } catch (err) {
-        setMapToggleEnabled(previous);
-        setMapToggleError(err instanceof Error ? err.message : "No se pudo guardar.");
       }
     });
   }
@@ -97,34 +72,6 @@ export function DestacadosScreen({
         </Button>
         {isPending ? <Spinner size={16} className="text-foreground-muted" /> : null}
         {toggleError ? <span className="text-xs text-red-500">{toggleError}</span> : null}
-      </GlassPanel>
-
-      <GlassPanel className="mb-6 flex flex-wrap items-center gap-3 px-4 py-3">
-        <div>
-          <span className="text-sm font-medium text-foreground">Mapa (Street View)</span>
-          <p className="text-xs text-foreground-muted">
-            Añade un icono en el visor para ver, con Street View, dónde se hizo cada foto con
-            coordenadas GPS.
-          </p>
-        </div>
-        <Button
-          variant={mapToggleEnabled ? "primary" : "glass"}
-          size="sm"
-          disabled={isPending}
-          onClick={handleMapToggle}
-          className="ml-auto"
-        >
-          {mapToggleEnabled ? "Activado" : "Desactivado"}
-        </Button>
-        {mapToggleError ? <span className="text-xs text-red-500">{mapToggleError}</span> : null}
-        <p className="w-full text-xs text-foreground-muted">
-          {streetViewLoadCount} de {STREET_VIEW_MONTHLY_FREE_LIMIT} cargas gratis usadas este mes
-          {streetViewLoadCount >= STREET_VIEW_MONTHLY_SAFE_LIMIT ? (
-            <span className="ml-1 font-medium text-red-500">
-              — bloqueado automáticamente hasta el mes que viene
-            </span>
-          ) : null}
-        </p>
       </GlassPanel>
 
       {items.length === 0 ? (

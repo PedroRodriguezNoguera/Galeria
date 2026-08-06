@@ -27,10 +27,16 @@ const MID_POS = { open: { top: "11%", left: "6%", scale: 1 }, closed: { top: "50
 const BACK_POS = { open: { top: "13%", right: "6%", scale: 1 }, closed: { top: "52%", right: "24%", scale: 0.68 } };
 
 // Relleno de la solapa: bastante más marcada cerrada (se nota que guarda las
-// fotos dentro) pero sin dejar de ser cristal translúcido; bastante más
-// suave abierta — el estado que ya se veía.
-const FILL_TOP = { open: "rgba(255,255,255,0.38)", closed: "rgba(255,255,255,0.68)" };
-const FILL_BOTTOM = { open: "rgba(255,255,255,0.62)", closed: "rgba(255,255,255,0.82)" };
+// fotos dentro) y con un punto de gris, en vez de blanco puro, para que se
+// distinga aún más de las fotos de detrás; bastante más suave y blanca
+// abierta — el estado que ya se veía.
+const FILL_TOP = { open: "rgba(255,255,255,0.38)", closed: "rgba(210,212,216,0.72)" };
+const FILL_BOTTOM = { open: "rgba(255,255,255,0.62)", closed: "rgba(180,183,188,0.86)" };
+// Borde en degradado, igual que el relleno (más claro arriba, más oscuro
+// abajo): blanco brillante abierta (como ya se veía), gris cerrada — si no,
+// un borde blanco liso desentonaba sobre el gris nuevo del relleno.
+const BORDER_TOP = { open: "rgba(255,255,255,0.95)", closed: "rgba(205,207,211,0.95)" };
+const BORDER_BOTTOM = { open: "rgba(255,255,255,0.7)", closed: "rgba(140,143,148,0.9)" };
 
 /**
  * Silueta de carpeta a medio abrir, con 1-3 fotos reales de la propia carpeta
@@ -61,6 +67,8 @@ export function AlbumTile({ album, expanded, onTap }: AlbumTileProps) {
         scale: 1,
         "--folder-fill-top": FILL_TOP[state],
         "--folder-fill-bottom": FILL_BOTTOM[state],
+        "--folder-border-top": BORDER_TOP[state],
+        "--folder-border-bottom": BORDER_BOTTOM[state],
       }}
       transition={transition}
       onClick={onTap}
@@ -115,11 +123,15 @@ export function AlbumTile({ album, expanded, onTap }: AlbumTileProps) {
             <stop offset="0%" stopColor="var(--folder-fill-top)" />
             <stop offset="100%" stopColor="var(--folder-fill-bottom)" />
           </linearGradient>
+          <linearGradient id={`folder-border-${album.id}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--folder-border-top)" />
+            <stop offset="100%" stopColor="var(--folder-border-bottom)" />
+          </linearGradient>
         </defs>
         <path
           d="M6,44 L6,34 Q6,30 10,30 L36,30 Q40,30 42,34 L46,42 L92,42 Q96,42 96,46 L96,90 Q96,94 92,94 L10,94 Q6,94 6,90 Z"
           fill={`url(#folder-fill-${album.id})`}
-          stroke="var(--glass-highlight)"
+          stroke={`url(#folder-border-${album.id})`}
           strokeWidth="2"
         />
       </svg>

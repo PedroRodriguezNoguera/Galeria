@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { attachReactionSummaries } from "@/lib/data/gallery";
 import { fetchAlbums } from "@/lib/data/albums";
 import { AdminGalleryGrid } from "@/components/admin/AdminGalleryGrid";
-import { AdminDashboardHeader } from "@/components/admin/AdminDashboardHeader";
 import { AdminNav } from "@/components/admin/AdminNav";
 
 export default async function AdminDashboardPage() {
@@ -27,7 +26,15 @@ export default async function AdminDashboardPage() {
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 lg:max-w-5xl xl:max-w-6xl">
       <AdminNav />
-      <AdminDashboardHeader />
+
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold">Moderación</h1>
+        <p className="mt-1 text-sm text-foreground-muted">
+          Todo lo subido por los visitantes. Mantén pulsada una foto o vídeo para seleccionar
+          varios y actuar en bloque.
+        </p>
+      </div>
+
       <AdminGalleryGrid items={items} albums={albums} />
     </main>
   );

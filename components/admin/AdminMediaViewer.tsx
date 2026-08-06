@@ -7,6 +7,7 @@ import type { MediaWithReactions } from "@/types/media";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
+import { CloseIcon, DownloadIcon } from "@/components/ui/icons";
 import { PhotoZoomView } from "@/components/viewer/PhotoZoomView";
 import { VideoPlayerView } from "@/components/viewer/VideoPlayerView";
 import {
@@ -15,6 +16,7 @@ import {
   deletePostPermanently,
   deleteReactions,
 } from "@/lib/actions/moderatePost";
+import { downloadFilenameForMedia, getDownloadUrl } from "@/lib/media/publicUrl";
 import { springGentle, springSwipe, fadeTransition } from "@/animations/springs";
 import { slideHorizontal } from "@/animations/variants";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -164,14 +166,27 @@ export function AdminMediaViewer({
                 {media.is_hidden ? "Oculta" : "Visible"} ·{" "}
                 {media.media_type === "image" ? "Foto" : "Vídeo"} · {formatBytes(media.size_bytes)}
               </span>
-              <button
-                type="button"
-                onClick={requestClose}
-                aria-label="Cerrar"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-glass-border bg-glass text-foreground backdrop-blur-xl backdrop-saturate-150"
-              >
-                ✕
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <a
+                  href={getDownloadUrl(
+                    "media-original",
+                    media.storage_path,
+                    downloadFilenameForMedia(media),
+                  )}
+                  aria-label="Descargar"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-glass-border bg-glass text-foreground backdrop-blur-xl backdrop-saturate-150"
+                >
+                  <DownloadIcon className="h-3.5 w-3.5" />
+                </a>
+                <button
+                  type="button"
+                  onClick={requestClose}
+                  aria-label="Cerrar"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-glass-border bg-glass text-foreground backdrop-blur-xl backdrop-saturate-150"
+                >
+                  <CloseIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
 
             <div className="relative z-10 mt-auto px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">

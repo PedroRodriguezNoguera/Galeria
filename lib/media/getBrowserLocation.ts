@@ -4,6 +4,12 @@ export interface GpsCoords {
 }
 
 const BROWSER_LOCATION_TIMEOUT_MS = 8000;
+// Cuánto se acepta reutilizar una posición ya obtenida hace poco (en vez de
+// pedir una nueva): esto es lo que permite que la petición de "calentamiento"
+// al abrir la hoja de subida (ver UploadFab) sirva de verdad como respaldo —
+// para cuando se necesita de verdad, tras elegir "Cámara" y volver de hacer
+// la foto, ya suele haber una posición fresca de sobra sin tener que esperar.
+const MAX_POSITION_AGE_MS = 60_000;
 
 /**
  * Lo que hace la cámara nativa a través de `<input capture>` casi nunca trae
@@ -13,6 +19,13 @@ const BROWSER_LOCATION_TIMEOUT_MS = 8000;
  * respaldo (ver UploadSheet, que la llama en cuanto se toca "Cámara" — no
  * después de volver de la foto: algunos navegadores no conceden el permiso,
  * o lo deniegan solos, si se pide fuera de la respuesta directa a un toque).
+ *
+ * `enableHighAccuracy: false` a propósito: una posición por wifi/red suele
+ * resolver en menos de un segundo, mientras que exigir precisión de GPS de
+ * verdad puede tardar bastante más de los 8s de margen de aquí abajo
+ * (sobre todo en interiores o con el GPS "frío"), y para etiquetar en qué
+ * fiesta se hizo la foto sobra con precisión aproximada — es preferible
+ * conseguir algo rápido y fiable que quedarse sin nada por pedir de más.
  *
  * El `timeout` de la propia API de geolocalización no es fiable en todos los
  * navegadores/móviles (se ha visto quedarse colgado mientras el diálogo de
@@ -38,7 +51,11 @@ export function getBrowserLocation(): Promise<GpsCoords | undefined> {
       (position) =>
         finish({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
       () => finish(undefined),
-      { enableHighAccuracy: true, timeout: BROWSER_LOCATION_TIMEOUT_MS, maximumAge: 0 },
+      {
+        enableHighAccuracy: false,
+        timeout: BROWSER_LOCATION_TIMEOUT_MS,
+        maximumAge: MAX_POSITION_AGE_MS,
+      },
     );
   });
 }

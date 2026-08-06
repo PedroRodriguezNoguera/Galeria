@@ -179,6 +179,193 @@ export function CheckIcon({ className }: IconProps) {
   );
 }
 
+interface FillableIconProps extends IconProps {
+  /** Relleno sólido para el estado "activo" (p.ej. ya destacado); contorno si no. */
+  filled?: boolean;
+}
+
+export function StarIcon({ className, filled = false }: FillableIconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 3.7 14.6 9l5.7.8-4.15 4 .98 5.7L12 16.7l-5.13 2.8.98-5.7L4.7 9.8 10.4 9Z" />
+    </svg>
+  );
+}
+
+export function FolderIcon({ className, filled = false }: FillableIconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M4 7.2A1.7 1.7 0 0 1 5.7 5.5h3.6l1.7 2h7.3A1.7 1.7 0 0 1 20 9.2v7.6a1.7 1.7 0 0 1-1.7 1.7H5.7A1.7 1.7 0 0 1 4 16.8Z" />
+    </svg>
+  );
+}
+
+export function EyeIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M3.5 12S6.6 5.8 12 5.8 20.5 12 20.5 12 17.4 18.2 12 18.2 3.5 12 3.5 12Z" />
+      <circle cx="12" cy="12" r="2.6" />
+    </svg>
+  );
+}
+
+export function EyeOffIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M3.5 12S6.6 5.8 12 5.8c1.5 0 2.9.4 4.15 1.1M20.5 12S17.4 18.2 12 18.2c-1.5 0-2.9-.4-4.15-1.1" />
+      <path d="M9.6 10.3a3 3 0 0 0 4.15 4.1" />
+      <path d="M4.2 4.2l15.6 15.6" />
+    </svg>
+  );
+}
+
+export function TrashIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M5 7.5h14M9.3 7.5V6a1.5 1.5 0 0 1 1.5-1.5h2.4A1.5 1.5 0 0 1 14.7 6v1.5" />
+      <path d="M7.1 7.5l.75 10.8a1.6 1.6 0 0 0 1.6 1.5h5.1a1.6 1.6 0 0 0 1.6-1.5l.75-10.8" />
+      <path d="M10.3 11v5M13.7 11v5" />
+    </svg>
+  );
+}
+
+export function GearIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M4 6.5h7M15.5 6.5H20M4 12h9.5M18 12h2M4 17.5h5M13.5 17.5H20" />
+      <circle cx="11" cy="6.5" r="2" fill="currentColor" stroke="none" />
+      <circle cx="15.5" cy="12" r="2" fill="currentColor" stroke="none" />
+      <circle cx="9.5" cy="17.5" r="2" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function PersonIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="8" r="3.4" />
+      <path d="M5 20c0-3.6 3.1-6.2 7-6.2s7 2.6 7 6.2" />
+    </svg>
+  );
+}
+
+export function LogOutIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M10 4.5H6.5A1.5 1.5 0 0 0 5 6v12a1.5 1.5 0 0 0 1.5 1.5H10" />
+      <path d="M14 8l4 4-4 4M18 12H9.5" />
+    </svg>
+  );
+}
+
+export function DownloadIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 4v10.5M8 11l4 4 4-4" />
+      <path d="M5 16.5v2A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-2" />
+    </svg>
+  );
+}
+
+export function TicketIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="4" y="5.5" width="16" height="13" rx="2" />
+      <path d="M4 9.5h16M9 5.5v13M15 5.5v13" />
+    </svg>
+  );
+}
+
 /**
  * Gira el elemento referenciado alrededor de (12,12) sin parar, escribiendo
  * directamente el atributo SVG nativo `transform="rotate(grados 12 12)"` en

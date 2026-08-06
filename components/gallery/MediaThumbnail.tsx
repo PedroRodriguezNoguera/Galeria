@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { MediaWithReactions } from "@/types/media";
 import { getPublicStorageUrl } from "@/lib/media/publicUrl";
+import { PlayIcon } from "@/components/ui/icons";
 
 interface MediaThumbnailProps {
   media: MediaWithReactions;
@@ -28,9 +29,7 @@ export function MediaThumbnail({ media }: MediaThumbnailProps) {
 
       {media.media_type === "video" ? (
         <span className="absolute bottom-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-glass-border bg-glass-strong text-foreground backdrop-blur-md backdrop-saturate-150">
-          <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">
-            <path d="M1 0.5 9 5 1 9.5Z" />
-          </svg>
+          <PlayIcon className="h-3 w-3 translate-x-px" />
         </span>
       ) : null}
 
