@@ -36,6 +36,14 @@ const nextConfig: NextConfig = {
           },
         ]
       : [],
+    // Las fotos ya se comprimen/redimensionan en el navegador antes de
+    // subirse y hay un bucket de miniaturas dedicado (ver useUpload.ts /
+    // compressImage.ts), así que no hace falta que Vercel las vuelva a
+    // optimizar al servirlas — y ese paso extra tiene una cuota mensual
+    // limitada en el plan actual que se agotó y tumbó TODAS las miniaturas
+    // (error 402 OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED en /_next/image).
+    // Sirviendo las URLs de Supabase directas se evita depender de esa cuota.
+    unoptimized: true,
   },
 };
 
