@@ -4,6 +4,8 @@ Galería de fotos y vídeo compartida en tiempo real para eventos en directo: cu
 
 **Proyecto completo y funcional, no una maqueta.** Ya ha tenido uso real y público: estuvo en producción durante un evento en directo con asistentes reales subiendo fotos y vídeos, no solo probado en local.
 
+🔗 **Demo en vivo:** [comisiongea.com](https://comisiongea.com)
+
 ## Qué resuelve
 
 En cualquier evento con mucha gente (una fiesta, una boda, un concierto, una jornada de empresa...), las fotos y vídeos de los asistentes quedan repartidos entre cientos de móviles y grupos de chat distintos, y buena parte se pierde o nunca se comparte. Esta app centraliza todo eso en un único muro en tiempo real, accesible desde el móvil de cualquiera sin necesidad de cuenta ni instalar nada, y da a los organizadores una forma de moderar lo que se publica.
