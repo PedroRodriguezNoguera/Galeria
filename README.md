@@ -1,12 +1,12 @@
 # Galería
 
-Galería de fotos y vídeos compartida en tiempo real, pensada para fiestas patronales: cualquier asistente sube contenido desde el móvil sin registrarse y lo ve aparecer al instante en un muro colectivo, mientras un panel de administración permite moderar, organizar y exportar todo lo subido.
+Galería de fotos y vídeo compartida en tiempo real para eventos en directo: cualquier asistente sube contenido desde el móvil sin registrarse y lo ve aparecer al instante en un muro colectivo, mientras un panel de administración permite moderar, organizar y exportar todo lo subido.
 
-Aplicación real usada en directo durante unas fiestas patronales, no una maqueta ni un proyecto de práctica sin uso.
+**Proyecto completo y funcional, no una maqueta.** Ya ha tenido uso real y público: estuvo en producción durante un evento en directo con asistentes reales subiendo fotos y vídeos, no solo probado en local.
 
 ## Qué resuelve
 
-En una fiesta de pueblo, las fotos y vídeos de los asistentes quedan repartidos entre cientos de móviles y grupos de WhatsApp distintos, y buena parte se pierde o nunca se comparte. Esta app centraliza todo eso en un único muro en tiempo real, accesible desde el móvil de cualquiera sin necesidad de cuenta ni instalar nada, y da a los organizadores una forma de moderar lo que se publica.
+En cualquier evento con mucha gente (una fiesta, una boda, un concierto, una jornada de empresa...), las fotos y vídeos de los asistentes quedan repartidos entre cientos de móviles y grupos de chat distintos, y buena parte se pierde o nunca se comparte. Esta app centraliza todo eso en un único muro en tiempo real, accesible desde el móvil de cualquiera sin necesidad de cuenta ni instalar nada, y da a los organizadores una forma de moderar lo que se publica.
 
 ## Funcionalidades
 
@@ -24,12 +24,12 @@ En una fiesta de pueblo, las fotos y vídeos de los asistentes quedan repartidos
 - Moderación: ocultar, volver a mostrar o borrar definitivamente publicaciones (una a una o en bloque), con limpieza del archivo original y su miniatura en el storage al borrar.
 - Exportación y descarga en bloque por carpetas, o de un archivo individual.
 - Etiquetado de personas en las fotos.
-- Planificador de eventos: define el calendario de la fiesta (chupinazo, encierro, charanga, cena patronal, discomóvil...) y la cabecera de la app cambia de tema automáticamente según qué evento esté en curso.
+- Planificador de eventos: define el calendario de actividades del evento y la cabecera de la app cambia de tema y animación automáticamente según cuál esté en curso (configurado en la versión ya usada en producción con actividades propias de una fiesta popular, pero el sistema de temas es genérico y reutilizable para cualquier tipo de evento).
 - Ajustes generales: activar/desactivar el mapa, los destacados, límites de subida, etc.
 
 **Extras**
 - Bingo interactivo integrado, con cartones generados por usuario y activable/desactivable desde el admin.
-- Instalable como PWA (icono en el escritorio del móvil, service worker), pensada para usarse como una app nativa durante todo el fin de semana de fiestas.
+- Instalable como PWA (icono en el escritorio del móvil, service worker), pensada para usarse como una app nativa durante todo el evento.
 - Protección anti-abuso: límite de peticiones por IP (con hash + salt antes de guardarla, nunca en claro) en acciones sensibles como las reacciones.
 
 ## Cómo funciona por dentro
